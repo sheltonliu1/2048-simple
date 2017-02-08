@@ -1,0 +1,386 @@
+<html>
+	<head>
+		<title>2048</title>
+		
+	</head>
+	<body >
+		<canvas id="drawing" width="600px" height="600px"></canvas>
+		<script src="index.js"></script>
+		<script>
+			//通用事件工具类
+			var EventUtil = {
+				addHandler: function(element,type,handler){
+					if(element.addEventListener){
+						element.addEventListener(type,handler,false);
+					}else if(element.attachEvent){
+						element.attachEvent("on"+type,handler);
+					}else{
+						element["on"+type] = handler;
+					}
+				},
+				removeHandler: function(element,type,handler){
+					if(element.removeHandlerListener){
+						element.removeHandlerListener(type,handler,false);
+					}else if(element.detachEvent){
+						element.detachEvent("on"+type,hanlder);
+					}else{
+						element["on"+type] = null;
+					}
+				},
+				getTarget: function(event){
+					return event.target || event.srcElement;
+				},
+				getEvent: function(event){
+					return event ? event : window.event;
+				}
+			}
+			var drawing = document.getElementById('drawing');
+			if (drawing.getContext) {
+				var context = drawing.getContext("2d");
+				var smallgame = {
+					mapnumbers: new Array(4),
+					maxnumber:2,
+					initpage: function(){
+						context.fillStyle = "rgba(232,224,201,0.5)";
+						context.fillRect(100,100,400,400);
+						context.beginPath();
+						for (var i = 0; i < 5; i++) {
+							context.moveTo(100,100+100*i);
+							context.lineTo(500,100+100*i);
+
+							context.moveTo(100+100*i,100);
+							context.lineTo(100+100*i,500);
+						}
+						context.stroke();
+					},
+					drawnumber: function(num,x,y){
+						context.fillStyle = "#000000";
+						context.font = "bold 25px Arial";
+						context.textAlign = "center";
+						context.textBaseline = "middle";
+						context.fillText(num,150+100*x,150+100*y);
+					},
+					redrawnumbers: function(){
+						for (var i = 0; i < 4; i++) {
+							for (var j = 0; j < 4; j++) {
+								context.clearRect(105+100*i,105+100*j,90,90);
+								context.fillStyle = "rgba(232,224,201,0.5)";
+								context.fillRect(105+100*i,105+100*j,90,90);
+								if(smallgame.mapnumbers[i][j]){
+									if(smallgame.mapnumbers[i][j] > smallgame.maxnumber){
+										smallgame.maxnumber = smallgame.mapnumbers[i][j];
+									}
+									smallgame.drawnumber(smallgame.mapnumbers[i][j],i,j);
+								}
+							}
+						}
+					},
+					initnumber: function(count){
+						for (var i = 0; i < smallgame.mapnumbers.length; i++) {
+							smallgame.mapnumbers[i] = new Array('','','','');
+						}
+						var initnum = 0;
+						while (initnum < count) {
+							var x = parseInt(Math.random()*4);
+							var y = parseInt(Math.random()*4);
+							if(smallgame.mapnumbers[x][y] == ""){
+								smallgame.mapnumbers[x][y] = 2;
+								smallgame.drawnumber(2,x,y);
+								initnum++;
+							}
+						}
+					},
+					judgegameover: function(){
+						for (var i = 0; i < 4; i++) {
+							var prex = -1;
+							var prey = -1;
+							for (var j = 0; j < 4; j++) {
+								if(!smallgame.mapnumbers[i][j] || !smallgame.mapnumbers[j][i]){
+									return false;
+								}else if((smallgame.mapnumbers[i][j] == prex || smallgame.mapnumbers[j][i] == prey)){
+									return false;
+								}else{
+									prex = smallgame.mapnumbers[i][j];
+									prey = smallgame.mapnumbers[j][i];
+								}
+							}
+						}
+						return true;
+					},
+					createnumber: function(direct){
+						var endflag = true;
+						var newnum = 2;
+						if(smallgame.maxnumber > 32){
+							if(Math.random()>0.75){
+								newnum = 4;
+							}
+							if(smallgame.maxnumber >= 256){
+								if(Math.random()>0.8){
+									newnum =8;
+								}
+							}
+						}
+						switch(direct) {
+							case 37:
+								for (var i = 0; i < 4; i++) {
+									if(!smallgame.mapnumbers[3][i]){
+										endflag = false;
+										break;
+									}
+								}
+								if(endflag){
+									return;
+								}
+								while(true){
+									var y = parseInt(Math.random()*4);
+									if(smallgame.mapnumbers[3][y] == ""){
+										smallgame.mapnumbers[3][y] = newnum;
+										smallgame.drawnumber(newnum,3,y);
+										break;
+									}
+								}
+								break;
+							case 38:
+								for (var i = 0; i < 4; i++) {
+									if(!smallgame.mapnumbers[i][3]){
+										endflag = false;
+										break;
+									}
+								}
+								if(endflag){
+									return;
+								}
+								while(true){
+									var x = parseInt(Math.random()*4);
+									if(smallgame.mapnumbers[x][3] == ""){
+										smallgame.mapnumbers[x][3] = newnum;
+										smallgame.drawnumber(newnum,x,3);
+										break;
+									}
+								}
+								break;
+							case 39:
+								for (var i = 0; i < 4; i++) {
+									if(!smallgame.mapnumbers[0][i]){
+										endflag = false;
+										break;
+									}
+								}
+								if(endflag){
+									return;
+								}
+								while(true){
+									var y = parseInt(Math.random()*4);
+									if(smallgame.mapnumbers[0][y] == ""){
+										smallgame.mapnumbers[0][y] = newnum;
+										smallgame.drawnumber(newnum,0,y);
+										break;
+									}
+								}
+								break;
+							case 40:
+								for (var i = 0; i < 4; i++) {
+									if(!smallgame.mapnumbers[i][0]){
+										endflag = false;
+										break;
+									}
+								}
+								if(endflag){
+									return;
+								}
+								while(true){
+									var x = parseInt(Math.random()*4);
+									if(smallgame.mapnumbers[x][0] == ""){
+										smallgame.mapnumbers[x][0] = newnum;
+										smallgame.drawnumber(newnum,x,0);
+										break;
+									}
+								}
+								break;
+						}
+						
+					},
+					addKeyEvent: function(){
+						EventUtil.addHandler(document,"keyup",function(){
+							var cango = false;	//是否可以移动
+							switch(EventUtil.getEvent(event).keyCode) {
+								case 37://左
+									for (var i = 0; i < 4; i++) {
+										var start = -1;		//记录这一行最早的空白位置
+										var prenum = -1;	//记录上一个数字
+										var preindex = -1;	//记录上一个数的位置
+										var flag = true;	//是否还可以合并
+										for (var j = 0; j < 4; j++) {
+											if(smallgame.mapnumbers[j][i] == ""){
+												if(start<0){
+													start = j;
+												}
+											}else if((smallgame.mapnumbers[j][i] == prenum) && flag){
+												cango = true;
+												smallgame.mapnumbers[preindex][i] = smallgame.mapnumbers[j][i] + prenum;
+												smallgame.mapnumbers[j][i] = "";
+												prenum = smallgame.mapnumbers[preindex][i];
+												flag = false;
+												if(start < 0){
+													start = j;
+												}
+											}else{
+												prenum = smallgame.mapnumbers[j][i];
+												preindex = j;
+												if(start>=0){
+													cango = true;
+													preindex = start;
+													smallgame.mapnumbers[start][i] = prenum;
+													smallgame.mapnumbers[j][i] = "";
+													start++;
+												}
+											}
+											
+										}
+									}
+									if(cango){
+										smallgame.redrawnumbers();
+										setTimeout(function(){
+											smallgame.createnumber(37);
+										},300); 
+									}
+									break;
+								case 38://上
+									for (var i = 0; i < 4; i++) {
+										var start = -1;		//记录这一行最早的空白位置
+										var prenum = -1;	//记录上一个数字
+										var preindex = -1;	//记录上一个数的位置
+										var flag = true;	//是否还可以合并
+										for (var j = 0; j < 4; j++) {
+											if(smallgame.mapnumbers[i][j] == ""){
+												if(start<0){
+													start = j;
+												}
+											}else if((smallgame.mapnumbers[i][j] == prenum) && flag){
+												cango = true;
+												smallgame.mapnumbers[i][preindex] = smallgame.mapnumbers[i][j] + prenum;
+												smallgame.mapnumbers[i][j] = "";
+												prenum = smallgame.mapnumbers[i][preindex];
+												flag = false;
+												if(start < 0){
+													start = j;
+												}
+											}else{
+												prenum = smallgame.mapnumbers[i][j];
+												preindex = j;
+												if(start>=0){
+													cango = true;
+													preindex = start;
+													smallgame.mapnumbers[i][start] = prenum;
+													smallgame.mapnumbers[i][j] = "";
+													start++;
+												}
+											}
+											
+										}
+									}
+									if(cango){
+										smallgame.redrawnumbers();
+										setTimeout(function(){
+											smallgame.createnumber(38);
+										},300); 
+									}
+									break;
+								case 39://右
+									for (var i = 0; i < 4; i++) {
+										var start = -1;		//记录这一行最早的空白位置
+										var prenum = -1;	//记录上一个数字
+										var preindex = -1;	//记录上一个数的位置
+										var flag = true;	//是否还可以合并
+										for (var j = 3; j >= 0; j--) {
+											if(smallgame.mapnumbers[j][i] == ""){
+												if(start<0){
+													start = j;
+												}
+											}else if((smallgame.mapnumbers[j][i] == prenum) && flag){
+												cango = true;
+												smallgame.mapnumbers[preindex][i] = smallgame.mapnumbers[j][i] + prenum;
+												smallgame.mapnumbers[j][i] = "";
+												prenum = smallgame.mapnumbers[preindex][i];
+												flag = false;
+												if(start < 0){
+													start = j;
+												}
+											}else{
+												prenum = smallgame.mapnumbers[j][i];
+												preindex = j;
+												if(start>=0){
+													cango = true;
+													preindex = start;
+													smallgame.mapnumbers[start][i] = prenum;
+													smallgame.mapnumbers[j][i] = "";
+													start--;
+												}
+											}
+											
+										}
+									}
+									if(cango){
+										smallgame.redrawnumbers();
+										setTimeout(function(){
+											smallgame.createnumber(39);
+										},300); 
+									}
+									break;
+								case 40://下
+									for (var i = 0; i < 4; i++) {
+										var start = -1;		//记录这一行最早的空白位置
+										var prenum = -1;	//记录上一个数字
+										var preindex = -1;	//记录上一个数的位置
+										var flag = true;	//是否还可以合并
+										for (var j = 3; j >= 0; j--) {
+											if(smallgame.mapnumbers[i][j] == ""){
+												if(start<0){
+													start = j;
+												}
+											}else if((smallgame.mapnumbers[i][j] == prenum) && flag){
+												cango = true;
+												smallgame.mapnumbers[i][preindex] = smallgame.mapnumbers[i][j] + prenum;
+												smallgame.mapnumbers[i][j] = "";
+												prenum = smallgame.mapnumbers[i][preindex];
+												flag = false;
+												if(start < 0){
+													start = j;
+												}
+											}else{
+												prenum = smallgame.mapnumbers[i][j];
+												preindex = j;
+												if(start>=0){
+													cango = true;
+													preindex = start;
+													smallgame.mapnumbers[i][start] = prenum;
+													smallgame.mapnumbers[i][j] = "";
+													start--;
+												}
+											}
+											
+										}
+									}
+									if(cango){
+										smallgame.redrawnumbers();
+										setTimeout(function(){
+											smallgame.createnumber(40);
+										},300); 
+									}
+									break;
+							}
+							if(smallgame.judgegameover()){
+								alert("game over");
+							}
+						});
+						
+					}
+				}
+				smallgame.initpage();
+				smallgame.initnumber(4);
+				smallgame.addKeyEvent();
+				
+			}
+		</script>
+	</body>
+</html>
